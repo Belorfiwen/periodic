@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+//Ex1
+
 int main (int argc, char* argv[]){
 
 	if(argc<2){

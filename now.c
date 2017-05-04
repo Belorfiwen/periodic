@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+//Ex1
+
 int main (int argc, char* argv[]){
 
 	time_t tloc;

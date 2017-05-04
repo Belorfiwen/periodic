@@ -1,0 +1,37 @@
+$ ./now
+1492176123
+
+$ ./periodic 1492176132 0 echo hello
+valid task
+
+$ ./periodic +10 2 noexist
+valid task
+
+$ ./periodic now 2 echo hello
+valid task
+
+$ ./periodic 1492176122 0 echo hello
+invalid start
+usage : ./periodic start period cmd [args]
+
+$ ./periodic zzz 0  echo bon
+invalid start
+usage : ./periodic start period cmd [args]
+
+$ ./periodic -10 0  echo bon
+invalid start
+usage : ./periodic start period cmd [args]
+
+$ ./periodic +10dfd 2  echo bon
+invalid start
+usage : ./periodic start period cmd [args]
+
+$ ./periodic now 0blabla echo bon
+invalid period
+usage : ./periodic start period cmd [args]
+
+$ ./periodic now -1 echo bon
+invalid period
+usage : ./periodic start period cmd [args]
+
+
