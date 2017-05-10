@@ -1,68 +1,172 @@
-#include "message.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
-#include <string.h>
+#define _POSIX_C_SOURCE 200809L
 
-#define POSIX C SOURCE 200809L
+#include "message.h"
 
 
 int main (int argc, char *argv[]){
 
-//Ex3
-	if(argc<4){
+	//Ex7
+	pid_t pid = getpid();
+	struct stat buf;
+	int exist = stat("/tmp/period.pid",&buf);
+	if(exist==-1){
 
-		fprintf(stderr,"usage : ./periodic start period cmd [args]");
+		if(errno != ENOENT){
+			//ex7-1
+			int des=open("/tmp/period.pid",O_WRONLY|O_CREAT, 0777);
+			if(des==-1){
+				fprintf(stderr,"Impossible d'ouvrir ou de créer le fichier\n");
+				perror("open");
+				exit(1);
+			}
+			
+			int ret=write(des, &pid, 7);
+			if(ret==-1){
+				fprintf(stderr,"Impossible d'écrire dans le fichier\n");
+				perror("write");
+				exit(1);
+			} 
+
+			des=close(des);
+			if(des){
+				fprintf(stderr,"Impossible de fermer le descripteur\n");
+				perror("close");
+				exit(1);
+			}
+						
+
+		}
+		else{
+			fprintf(stderr,"Impossible de vérifier les données\n");
+			exit(1);
+		}
+	}
+	else{
+		fprintf(stderr,"Le fichier existe déjà\n");
 		exit(1);
-
 	}
 
-	time_t tloc;
-	time_t sec=time(&tloc);
-	if(sec==-1){
-		perror("time");
+
+	//ex7-2 Redirection de la sortie standard vers /tmp/period.out
+	int des=open("/tmp/period.out",O_WRONLY|O_CREAT, 0777);
+	if(des==-1){
+		fprintf(stderr,"Impossible d'ouvrir ou de créer le fichier\n");
+		perror("open");
 		exit(1);
 	}
 
-	char *now="now";
-	int arg1=atoi(argv[1]);
-	if((arg1<sec)&&(strcmp(argv[1],now)!=0)&&(argv[1][0]!='+')){
-		fprintf(stderr,"Le premier argument doit être superieur au nombre de seconde depuis Epoch\n usage : ./periodic start period cmd [args]");
+	int dupl=dup2(des,1);
+	if(dupl==-1){
+		fprintf(stderr,"Impossible de dupliquer le descripteur\n");
+		perror("dup2");
 		exit(1);
-
 	}
 
-	int arg2=atoi(argv[2]);
-	if(arg2<0){
-		fprintf(stderr,"Le deuxieme argument doit être superieur à 0\n usage : ./periodic start period cmd [args]");
+	des=close(des);
+	if(des){
+		fprintf(stderr,"Impossible de fermer le descripteur\n");
+		perror("close");
 		exit(1);
+	}
+
+
+	// redirection de l'erreur standard vers /tmp/period.err
+	des=open("/tmp/period.err",O_WRONLY|O_CREAT, 0777);
+	if(des==-1){
+		fprintf(stderr,"Impossible d'ouvrir ou de créer le fichier\n");
+		perror("open");
+		exit(1);
+	}
+
+	dupl=dup2(des,2);
+	if(dupl==-1){
+		fprintf(stderr,"Impossible de dupliquer le descripteur\n");
+		perror("dup2");
+		exit(1);
+	}
+
+	des=close(des);
+	if(des){
+		fprintf(stderr,"Impossible de fermer le descripteur\n");
+		perror("close");
+		exit(1);
+	}
+
+
+	//Verifier que le tube nommé existe en créer un sinon
+	int fifo;
+	exist = stat("/tmp/period.fifo",&buf);
+	if(exist==-1){
+
+		if(errno != ENOENT){
+			fprintf(stderr,"Le tube n'existe pas");
+			exit(1);
+		}
+
+		fifo= mkfifo("/tmp/period.fifo", 0777);
+		if(fifo==-1){
+			fprintf(stderr,"Impossible de créer un tube\n");
+			perror("mkfifo");
+			exit(EXIT_FAILURE);
+		}
+	}
+	else{
+		if(!S_ISFIFO(buf.st_mode)){
+			exist = remove("/tmp/period.fifo");
+			if(exist==-1){
+				fprintf(stderr,"Impossible de supprimer les données\n");
+				perror("remove");
+				exit(1);
+			}
+	
+			fifo= mkfifo("/tmp/period.fifo", 0777);
+			if(fifo==-1){
+				fprintf(stderr,"Impossible de créer un tube\n");
+				perror("mkfifo");
+				exit(EXIT_FAILURE);
+			}
+		}
 	}
 	
 
+	//Verifier que le repertoire /tmp/period existe sinon le créer
+	int rep;
+	
+	exist = stat("/tmp/period",&buf);
+	if(exist==-1){
 
-	//Ex4-3
+		if(errno != ENOENT){
+			fprintf(stderr,"Le répertoire n'existe pas\n");
+			exit(1);
+		}
 
-	// tester si il existe avec stats comme tp ls
-	int fifo= mkfifo("/tmp/period.fifo", 0644);
-	if(fifo==-1){
-		perror("mkfifo");
-		exit(EXIT_FAILURE);
+		rep= mkdir("/tmp/period", 0777);
+		if(rep==-1){
+			fprintf(stderr,"Impossible de créer un répertoire\n");
+			perror("mkdir");
+			exit(EXIT_FAILURE);
+		}
+	}
+	else{
+		if(!S_ISDIR(buf.st_mode)){
+			exist = remove("/tmp/period");
+			if(exist==-1){
+				fprintf(stderr,"Impossible de supprimer les données\n");
+				perror("remove");
+				exit(1);
+			}
+	
+			rep= mkdir("/tmp/period", 0777);
+			if(rep==-1){
+				fprintf(stderr,"Impossible de créer un répertoire\n");
+				perror("mkdir");
+				exit(EXIT_FAILURE);
+			}
+		}
 	}
 
-	int fd = open("/tmp/period.fifo", O_WRONLY);
-	if(fd==-1){
-		perror("mkfifo");
-		exit(EXIT_FAILURE);
-	}
 
-	if(strcmp(argv[1],now)==0){
-		char *tab[argc-1];
-		tab[0]=sec;
-		for(size_t i=
 		
-		int res= send_argv(fd, char *argv[]){
-	}
-	
 
 	return 0;
 

@@ -1,8 +1,6 @@
-#include "message.h"
-#include <errno.h>
-#include <sys/types.h>
-#include <signal.h>
+#define _POSIX_C_SOURCE 200809L
 
+#include "message.h"
 
 #define LONG_MIN ((long) 0x80000000L)
 #define LONG_MAX 0x7FFFFFFFL
@@ -102,14 +100,14 @@ char **recv_argv(int fd){
 int retpid(){
 
 	
-	int des=open("/tmp/period.pid",O_RDONLY,0777);
+	int des=open("/tmp/period.pid",O_RDONLY);
 	if(des==-1){
 		fprintf(stderr, "erreur lors de l'ouverture du descripteur");
 		perror("open");
 		return -1;
 	} 
-	int i;
-	int nb_read=read(des, &i, sizeof(int));
+	char i[7];
+	int nb_read=read(des, &i, 7);
 	if(nb_read==-1){
 		fprintf(stderr, "erreur lors de la lecture du descripteur");
 		perror("read");
@@ -128,17 +126,16 @@ int retpid(){
 
 	if((tmp==i)||(*tmp != '\0')||(((ret == LONG_MIN)||(ret == LONG_MAX))&&(errno == ERANGE))){
 
-		fprintf(stderr,"Impossible de convertir le pid '%d'\n",i);
+		fprintf(stderr,"Impossible de convertir le pid");
 		return -1;
 
 	}
 	
-	return i;
+	return ret;
 	
 }
 
 
-//Ex4
 void envoiSignal1(){
 
 	int rec=retpid();
@@ -158,7 +155,7 @@ void envoiSignal2(){
 	
 	int ret=kill(rec,SIGUSR2);
 	if(ret==-1){
-		fprintf(stderr, "erreur lors de l'envoi du signal SIGUSR1");
+		fprintf(stderr, "erreur lors de l'envoi du signal SIGUSR2");
 		perror("kill");
 		return;
 	} 	
@@ -168,7 +165,7 @@ void envoiSignal2(){
 
 int main(int argc, char *argv[]){
 
-	if(argc!=3){
+	/*if(argc!=3){
 		printf("nombre d'arguments incorrect\n");
 		exit(1);
 	}
@@ -251,7 +248,7 @@ int main(int argc, char *argv[]){
 		perror("close");
 		fprintf(stderr, "erreur lors de la fermeture du descripteur");
 		exit(1);
-	}
+	}*/
 
 	return 0;
 }
